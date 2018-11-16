@@ -1,17 +1,17 @@
-import requests, re
-from bs4 import BeautifulSoup
-import time
+import requests, re #импорт библиотек
+from bs4 import BeautifulSoup #импорт библиотек
+import time #время (для проверки оптимизации)
 
 def parse_subjects_list():  
-    subject = [''] * 5
-    url_start = 'https://olimpiada.ru/activities?type=any&subject%5B'
-    url_end = '%5D=on&class=any&period_date=&period=year'
-    for i in range(5):
-        s = requests.get(url_start + str(i) + url_end)
+    subject = [''] * 5 #предметы
+    url_start = 'https://olimpiada.ru/activities?type=any&subject%5B' #ссылка(0) на сайт
+    url_end = '%5D=on&class=any&period_date=&period=year' #ссылка(1) на сайт
+    for i in range(5): 
+        s = requests.get(url_start + str(i) + url_end) #переход(0) по ссылке
         #string = driver.find_element_by_id('megatitle').text
-        b = BeautifulSoup(s.text, "html.parser")
-        string = str(b.find('div', {'id': 'filter_fixed'}).find('font'))
-        index = string.index('</span> ')
+        b = BeautifulSoup(s.text, "html.parser") #переход(1) по ссылке
+        string = str(b.find('div', {'id': 'filter_fixed'}).find('font')) #поиск элементов на странице
+        index = string.index('</span> ') 
         index2 = string.index('</font>')
         subject[i] = string[index+8:index2]
         subject[i] = re.sub('\t','',subject[i])
