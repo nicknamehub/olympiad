@@ -1,0 +1,77 @@
+import requests, re, time
+from bs4 import BeautifulSoup
+class Olympiad:
+    name = ""
+    status = ""
+    desc = ""
+    classes = []
+    date = []  # {start, end, name}
+    link = ""
+    subject = ""
+    id_sub = 0
+
+def parse_sub(id_sub):
+    start_time = time.time()
+    url1 = 'https://olimpiada.ru/activities?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year'
+    site = requests.get(url1)
+    soup = BeautifulSoup(site.text, "html.parser")
+    kol_vo = soup.find('h1', {'id': 'megatitle'}).text
+    kol_vo = int(kol_vo[:kol_vo.index(' ')])
+    olimpiads = []
+    names_status = []
+    names = []
+    status1 = []
+    classes = []
+    description = []
+    for i in range(kol_vo):
+        x = Olympiad()
+        olimpiads.append(x)
+    if kol_vo % 20 == 0:
+        k = kol_vo // 20
+    else:
+        k = kol_vo // 20 + 1
+    for i in range(k):
+        q = 20*i
+        url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(q)
+        s = requests.get(url)
+        b = BeautifulSoup(s.text, "html.parser")
+        names_status.extend(b.findAll('span',{'class':'headline'}))
+        description.extend(b.findAll('a',{'class':'none_a black olimp_desc'}))
+        status1.extend(b.findAll('span',{'class':'headline red'}))
+        classes.extend(b.findAll('span',{'class':'classes_dop'}))
+    status = []
+    for i in range(len(names_status)):
+        names_status[i] = str(names_status[i])
+    k = 0
+    """for i in range(kol_vo):
+        if (names_status[i].find('red') == -1) and (i % 2 == k):
+            names.append(names_status[i])
+        elif (names_status[i].find('red') == -1) and (i % 2 != k):
+            names.append(names_status[i])
+            status.append('')
+            k = i % 2
+        else:
+            status.append(names_status[i])"""
+    flag1 = True
+    for i in range (len(names_status)):
+        flag2 = False
+        for k in range(len(status1)):
+            if names_status[i] == status1[k]:
+                status.append(status1[k])
+                flag2 = True
+                flag1 = True
+                break
+        if (flag2 == False) and (flag1 == True):
+            names.append(names_status[i])
+            flag1 = False
+        elif (flag2 == False) and (flag1 == False):
+            names.append(names_status[i])
+            status.append("")
+    #for i in range(len(names)):
+    #   print (names[i], ':', status[i])
+    print(names)
+    #print(status1)
+    print("\n","\n",'\n',len(names),len(status),len(description),len(names_status),kol_vo)
+start_time = time.time()
+parse_sub(6)
+print("--- %s seconds ---" % (time.time() - start_time))
