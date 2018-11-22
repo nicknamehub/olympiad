@@ -1,6 +1,6 @@
 import requests, time, datetime, re
 from bs4 import BeautifulSoup
-class Olympiad:
+class Olympiad: #создание класса олимпиады
     name = ""
     status = ""
     desc = ""
@@ -12,6 +12,7 @@ class Olympiad:
     rate = 0
 
 def time_edit(string,date_start):
+    """Функция, которая переделывает строку даты в нужный формат"""
     if string != None:
         string = re.sub('\xa0', ' ',string)
         if string.find('<') != -1:
@@ -50,7 +51,7 @@ def parse_sub(id_sub):
     link = []
     rate = []
     kol_vo = 0
-          #http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%                 5D=on&class=any&period_date=&period=year&cnow=7
+          #http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%5D=on&class=any&period_date=&period=year&cnow=7
     url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=0' + str(kol_vo)
     s = requests.get(url)
     b = BeautifulSoup(s.text, "html.parser")
@@ -104,8 +105,8 @@ def parse_sub(id_sub):
         x = Olympiad()
         olimpiads.append(x)
     print(len(names), len(status), len(classes), len(description))
-start_time = time.time()
-parse_sub(24)
+start_time = time.time() #нужно для просмотра времени работы программы
+parse_sub(24) #вызов функции олимпиады с номером 24
 #print(time_edit('18 янв','2018-09-30'))
 print("--- %s seconds ---" % (time.time() - start_time))
 #http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%5D=on&class=any&period_date=&period=year&cnow=6
