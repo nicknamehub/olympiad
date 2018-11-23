@@ -12,7 +12,7 @@ class Olympiad: #создание класса олимпиады
     rate = 0
 
 def time_edit(string,date_start):
-    """Функция, которая переделывает строку даты в нужный формат"""
+    """Функция, преобразующая строку даты в нужный нам формат"""
     if string != None:
         string = re.sub('\xa0', ' ',string)
         if string.find('<') != -1:
@@ -43,34 +43,27 @@ def time_edit(string,date_start):
 
 def parse_sub(id_sub):
     olimpiads = []
-    names = []
-    status = []
-    classes = []
-    description = []
-    date = []
-    link = []
-    rate = []
     kol_vo = 0
-          #http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%5D=on&class=any&period_date=&period=year&cnow=7
-    url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=0' + str(kol_vo)
+    url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
     s = requests.get(url)
     b = BeautifulSoup(s.text, "html.parser")
-    if b.find('', {'class': 'fav_olimp olimpiada new_data_fav'}) != None:
+    if b.find('div', {'class': 'fav_olimp olimpiada new_data_fav'}) != None:
         block = b.find('div', {'class': 'fav_olimp olimpiada new_data_fav'})
     else:
         block = b.find('div', {'class': 'fav_olimp olimpiada '})
     while block != None:
-        names.append(block.find('span',{'class':'headline'}).text)
+        x = Olympiad()
+        olimpiads.append(x)
+        olimpiads[kol_vo].name = block.find('span',{'class':'headline'}).text
         href_block = block.find('a',{'class':'none_a black'})
         href_block = str(href_block)
         href = 'https://olimpiada.ru' + href_block[href_block.index('href="')+6:href_block.index('" style')]
-        link.append(href)
+        olimpiads[kol_vo].link = href
         rate_str = block.find('span', {'class': 'pl_rating'}).text
         rate_str = list(rate_str)
         rate_str[1] = '.'
         rate_str = ''.join(rate_str)
-        rate.append(float(rate_str))
-        date.append([])
+        olimpiads[kol_vo].rate = float(rate_str)
         if block.find('div', {'class':'timeline'}) != None:
             timeline = block.find('div', {'class':'timeline'})
             dates = timeline.findAll('div')
@@ -85,30 +78,25 @@ def parse_sub(id_sub):
                 else:
                     date_stop = None
                 date_stop = time_edit(date_stop,dates[i][dates[i].index('date="')+6:dates[i].index('" ev_act=')])
-                date[kol_vo].append({'start':date_start, 'stop':date_stop, 'name':date_name})
+                olimpiads[kol_vo].date.append({'start':date_start, 'stop':date_stop, 'name':date_name})
         if block.find('span', {'class': 'headline red'}) != None:
-            status.append(block.find('span', {'class': 'headline red'}).text)
+            olimpiads[kol_vo].status = (block.find('span', {'class': 'headline red'}).text)
         else:
-            status.append('')
-        classes.append(block.find('span', {'class': 'classes_dop'}).text)
+            olimpiads[kol_vo].status = ''
+        olimpiads[kol_vo].classes = block.find('span', {'class': 'classes_dop'}).text
         if block.find('span', {'class': 'headline red'}) != None:
-            description.append(block.find('a', {'class': 'none_a black olimp_desc'}).text)
+            olimpiads[kol_vo].desc = block.find('a', {'class': 'none_a black olimp_desc'}).text
         else:
-            description.append('')
-        print(names[kol_vo], kol_vo)# status[kol_vo], description[kol_vo], rate[kol_vo], classes[kol_vo], link[kol_vo], date[kol_vo], kol_vo)
+            olimpiads[kol_vo].desc = ''
+        olimpiads[kol_vo].id_sub = id_sub
+        print(olimpiads[kol_vo].name, olimpiads[kol_vo].status, olimpiads[kol_vo].desc, olimpiads[kol_vo].classes,olimpiads[kol_vo].rate, olimpiads[kol_vo].date)
         kol_vo += 1
-        url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=0' + str(kol_vo)
+        url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
         s = requests.get(url)
         b = BeautifulSoup(s.text, "html.parser")
         block = b.find('div', {'class':'fav_olimp olimpiada '})
-    for i in range (kol_vo):
-        x = Olympiad()
-        olimpiads.append(x)
-    print(len(names), len(status), len(classes), len(description))
-start_time = time.time() #нужно для просмотра времени работы программы
-parse_sub(24) #вызов функции олимпиады с номером 24
+    print(len(olimpiads))
+start_time = time.time() #нужно для проверки времени работы программы
+parse_sub(24) #вызов функции парсинга с id предмета 24
 #print(time_edit('18 янв','2018-09-30'))
 print("--- %s seconds ---" % (time.time() - start_time))
-#http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%5D=on&class=any&period_date=&period=year&cnow=6
-#http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%5D=on&class=any&period_date=&period=year&cnow=7
-#http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B24%5D=on&class=any&period_date=&period=year&cnow=8
