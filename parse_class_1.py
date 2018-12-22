@@ -4,12 +4,24 @@ class Olympiad: #создание класса олимпиады
     name = ""
     status = ""
     desc = ""
-    classes = []
+    class_start = 0
+    class_stop = 0
     date = []  # {start, end, name}
     link = ""
     subject = ""
     id_sub = 0
     rate = 0
+    id = 0
+
+def is_sub_exist(id_sub):
+    kol_vo = 0
+    url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
+    s = requests.get(url)
+    b = BeautifulSoup(s.text, "html.parser")
+    if str(b) == 'stop':
+        return False
+    else:
+        return True
 
 def time_edit(string,date_start):
     """Функция, изменяющая формат строку даты в нужный нам формат"""
@@ -47,6 +59,9 @@ def parse_sub(id_sub):
     url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
     s = requests.get(url)
     b = BeautifulSoup(s.text, "html.parser")
+    #print(b)
+    if str(b) == 'stop':
+        return False
     if b.find('div', {'class': 'fav_olimp olimpiada new_data_fav'}) != None:
         block = b.find('div', {'class': 'fav_olimp olimpiada new_data_fav'})
     else:
@@ -58,11 +73,15 @@ def parse_sub(id_sub):
         href_block = str(href_block)
         href = 'https://olimpiada.ru' + href_block[href_block.index('href="')+6:href_block.index('" style')]
         x.link = href
+        #print(href)
+        x.id = int(href[href.find('ity/')+4:])
+        #print(x.id)
         rate_str = block.find('span', {'class': 'pl_rating'}).text
         rate_str = list(rate_str)
         rate_str[1] = '.'
         rate_str = ''.join(rate_str)
         x.rate = float(rate_str)
+        x.date = []
         if block.find('div', {'class':'timeline'}) != None:
             timeline = block.find('div', {'class':'timeline'})
             dates = timeline.findAll('div')
@@ -82,21 +101,35 @@ def parse_sub(id_sub):
             x.status = (block.find('span', {'class': 'headline red'}).text)
         else:
             x.status = ''
-        x.classes = block.find('span', {'class': 'classes_dop'}).text
+        classes = block.find('span', {'class': 'classes_dop'}).text
+        if classes.find('–') != -1:
+            x.class_start = int(classes[:classes.find('–')])
+            x.class_stop = int(classes[classes.find('–')+1:classes.find(' ')])
+        else:
+            if (classes.find(' ') != -1) and (classes.find(',') == -1):
+                x.class_start = int(classes[:classes.find(' ')])
+                x.class_stop = int(classes[:classes.find(' ')])
+            elif classes.find(',') == -1:
+                x.class_start = 1
+                x.class_stop = 11
         if block.find('span', {'class': 'headline red'}) != None:
             x.desc = block.find('a', {'class': 'none_a black olimp_desc'}).text
         else:
             x.desc = ''
         x.id_sub = id_sub
         olimpiads.append(x)
-        print(olimpiads[kol_vo].name, olimpiads[kol_vo].status, olimpiads[kol_vo].desc, olimpiads[kol_vo].classes,olimpiads[kol_vo].rate, olimpiads[kol_vo].date)
+        #print(olimpiads[kol_vo].name, olimpiads[kol_vo].status, olimpiads[kol_vo].desc, olimpiads[kol_vo].class_start, olimpiads[kol_vo].class_stop, olimpiads[kol_vo].rate, olimpiads[kol_vo].date)
+        #print(olimpiads[kol_vo].date)
         kol_vo += 1
         url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
         s = requests.get(url)
         b = BeautifulSoup(s.text, "html.parser")
         block = b.find('div', {'class':'fav_olimp olimpiada '})
-    print(len(olimpiads))
-start_time = time.time() #нужно для замера времени работы программы
+        #print(x.name,':',len(x.date))
+    #print(len(olimpiads))
+    return olimpiads
+#start_time = time.time() #нужно для замера времени работы программы
 parse_sub(24)
 #print(time_edit('18 янв','2018-09-30'))
-print("--- %s seconds ---" % (time.time() - start_time))
+#print(find_olimpiad_id('https://olimpiada.ru/activity/39'))
+#print("--- %s seconds ---" % (time.time() - start_time))
