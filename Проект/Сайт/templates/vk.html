@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}
+VK
+{% endblock %}
+
+{% block content %}
+<div class="banner">
+</div>
+<form action="">
+	<h3>Введите класс, в котором вы учитесь:</h3>
+	<input type="number">
+	<h3>Какие олимпиады вас интересуют?</h3>
+	<input type="radio" name="rate" value="high">Только высокорейтинговые<Br>
+    <input type="radio" name="rate" value="all">Все<Br>
+	<h3>Выберите интересующие вас предметы:</h3>
+	<input type="submit" value="Отправить">
+	<input type="reset" value="Очистить">
+</form>
+{% endblock %}

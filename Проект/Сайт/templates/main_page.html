@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Главная
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+	a.banner_link{
+		color:#FFF4E0;
+	}
+	a.banner_link:active{
+		color:#FFF4E0;
+	}
+	p{
+		margin:0px;
+		color: #FFF4E0;
+	}
+	div{
+		margin-top: 10px;
+	}
+	div.banner{
+		background: #FC3C3C;
+		text-align: center;
+		font-size: 35px;
+	}
+</style>
+<div class="banner">
+	<p>Получайте уведомление об интересующих вас олимпиадах, с помощью нашего бота <a class="banner_link" href="/vk">Вконтакте</a> или <a class="banner_link" href="/telegram">Telegram</a>.</p>
+</div>
+<div class="table">
+<table>
+	<tbody>
+		<tr>
+			<th>Название олимпиады</th>
+			<th>Статус</th>
+			<th>Дата</th>
+			<th>Класс</th>
+			<th>Рейтинг</th>
+			</tr>
+		</tbody>
+</table>
+</div>
+
+{% endblock %}

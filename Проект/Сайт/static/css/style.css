@@ -1,0 +1,45 @@
+ a.menu_link {
+      color:white;
+      font-size: 25px;
+    }
+    a.menu_link:active {
+      color:grey;
+    }
+    div.div_menu{
+      background: black;
+      height: 50px;
+    }
+     ul.menu {
+      margin: 0; /* Обнуляем значение отступов */
+      padding: 10px; /* Значение полей */
+     }
+     ul.menu li {
+      color: white;
+      display: inline; /* Отображать как строчный элемент */
+      margin-right: 5px; /* Отступ слева */
+      }
+ }
+
+table {
+margin: 5px;
+font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+font-size: 14px;
+border-collapse: collapse;
+text-align: center;
+}
+th, td:first-child {
+background: #AFCDE7;
+color: white;
+padding: 10px 20px;
+}
+th, td {
+border-style: solid;
+border-width: 0 1px 1px 0;
+border-color: white;
+}
+td {
+background: #D8E6F3;
+}
+th:first-child, td:first-child {
+text-align: left;
+}
