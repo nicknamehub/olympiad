@@ -1,4 +1,4 @@
-import requests, time, datetime, re
+import requests, re
 from bs4 import BeautifulSoup
 class Olympiad: #создание класса олимпиады
     name = ""
@@ -13,6 +13,17 @@ class Olympiad: #создание класса олимпиады
     rate = 0
     id = 0
 
+def subject_name(id_sub):
+    url = 'https://olimpiada.ru/include/activity/megatitle.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year'
+    s = requests.get(url)
+    b = BeautifulSoup(s.text,"html.parser")
+    sub_str = str(b)
+    sub_str = sub_str[sub_str.find('   ')+4:]
+    sub_str = sub_str[sub_str.find(' ')+2:]
+    sub_str = sub_str[sub_str.find(' ')+1:]
+    #print(sub_str)
+    return sub_str
+
 def is_sub_exist(id_sub):
     kol_vo = 0
     url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
@@ -23,8 +34,7 @@ def is_sub_exist(id_sub):
     else:
         return True
 
-def time_edit(string,date_start):
-    """Функция, изменяющая формат строку даты в нужный нам формат"""
+def edit_date_stop(string,date_start):
     if string != None:
         string = re.sub('\xa0', ' ',string)
         if string.find('<') != -1:
@@ -32,26 +42,31 @@ def time_edit(string,date_start):
             string = list(string)
             string.pop(pop_index)
             string = ''.join(string)
-        months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек', 'янв']
+        months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
         month_start = date_start[date_start.index('-')+1:date_start.rindex('-')]
         day = string[:string.index(' ')]
         if string[string.index(' ')+1:].find(' ') != -1:
             month = months.index(string[string.index(' ')+1:string.rindex(' ')]) + 1
         else:
             month = months.index(string[string.index(' ')+1:]) + 1
-        d = datetime.date.today()
-        if month < int(month_start):
-            year = str(d.year + 1)
+        date_start_year = int(date_start[:date_start.index('-')])
+        date_start_month = int(date_start[date_start.index('-')+1:date_start.index('-')+3])
+        #print(date_start_year,date_start_month)
+        #print(day,month)
+        if date_start_month > month:
+            year = date_start_year + 1
         else:
-            year = str(d.year)
-        if len(str(month)) == 1:
-            month = '0' + str(month)
+            year = date_start_year
+        month = str(month)
+        day = str(day)
+        if len(month) == 1:
+            month = '0'+ month
         if len(day) == 1:
             day = '0' + day
-        date = year + '-' + str(month) + '-' + day
+        res = str(year) + '-' + str(month) + '-' + str(day)
     else:
-        date = None
-    return date
+        res = None
+    return res
 
 def parse_sub(id_sub):
     olimpiads = []
@@ -66,6 +81,7 @@ def parse_sub(id_sub):
         block = b.find('div', {'class': 'fav_olimp olimpiada new_data_fav'})
     else:
         block = b.find('div', {'class': 'fav_olimp olimpiada '})
+    subject = subject_name(id_sub)
     while block != None:
         x = Olympiad()
         x.name = block.find('span',{'class':'headline'}).text
@@ -74,7 +90,7 @@ def parse_sub(id_sub):
         href = 'https://olimpiada.ru' + href_block[href_block.index('href="')+6:href_block.index('" style')]
         x.link = href
         #print(href)
-        x.id = int(href[href.find('ity/')+4:])
+        x.id = (href[href.find('ity/')+4:]) + '_' + str(id_sub)
         #print(x.id)
         rate_str = block.find('span', {'class': 'pl_rating'}).text
         rate_str = list(rate_str)
@@ -95,7 +111,7 @@ def parse_sub(id_sub):
                     date_stop = dates[i][dates[i].find('...')+3:dates[i].find('...')+9]
                 else:
                     date_stop = None
-                date_stop = time_edit(date_stop,dates[i][dates[i].index('date="')+6:dates[i].index('" ev_act=')])
+                date_stop = edit_date_stop(date_stop,dates[i][dates[i].index('date="')+6:dates[i].index('" ev_act=')])
                 x.date.append({'start':date_start, 'stop':date_stop, 'name':date_name})
         if block.find('span', {'class': 'headline red'}) != None:
             x.status = (block.find('span', {'class': 'headline red'}).text)
@@ -117,9 +133,12 @@ def parse_sub(id_sub):
         else:
             x.desc = ''
         x.id_sub = id_sub
+        x.subject = subject
         olimpiads.append(x)
         #print(olimpiads[kol_vo].name, olimpiads[kol_vo].status, olimpiads[kol_vo].desc, olimpiads[kol_vo].class_start, olimpiads[kol_vo].class_stop, olimpiads[kol_vo].rate, olimpiads[kol_vo].date)
         #print(olimpiads[kol_vo].date)
+        #print(olimpiads[kol_vo].link)
+        #print(olimpiads[kol_vo].subject)
         kol_vo += 1
         url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
         s = requests.get(url)
@@ -129,7 +148,9 @@ def parse_sub(id_sub):
     #print(len(olimpiads))
     return olimpiads
 #start_time = time.time() #нужно для замера времени работы программы
-parse_sub(24)
+#parse_sub(1)
 #print(time_edit('18 янв','2018-09-30'))
 #print(find_olimpiad_id('https://olimpiada.ru/activity/39'))
 #print("--- %s seconds ---" % (time.time() - start_time))
+#subject_name(27)
+#edit_date_stop('17 ноя', '2018-10-20')
