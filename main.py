@@ -20,6 +20,7 @@ for k in range(len(olimpiads)):
                            'link': olimpiads[k][q].link, 'subject': olimpiads[k][q].subject,
                            'id_sub': olimpiads[k][q].id_sub, 'rate': olimpiads[k][q].rate, 'id': olimpiads[k][q].id, 'real_link': olimpiads[k][q].real_link}
 res = {'user': 'admin', 'password': open('password.txt').read().strip('\n'), 'data': olimpiads}
+print(olimpiads[0])
 res_json = json.dumps(res, sort_keys=True)
 res = requests.post(url, json=res)
 print(res_json, res)
