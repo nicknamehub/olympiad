@@ -12,6 +12,24 @@ class Olympiad: #создание класса олимпиады
     id_sub = 0
     rate = 0
     id = 0
+    real_link = ""
+
+def get_real_link(link):
+    a = requests.get(link)
+    b = BeautifulSoup(a.text,"html.parser")
+    left_block = b.find('div',{'class':'left'})
+    contact_blocks = left_block.findAll('div', {'class':'contacts'})
+    if len(contact_blocks) != 0:
+        contact_block = contact_blocks[len(contact_blocks) - 1]
+    #print(contact_block)
+    #print(contact_block.find('a',{'class':'color'}))
+        if contact_block.find('a',{'class':'color'}) != None:
+            real_link = contact_block.find('a',{'class':'color'})['href']
+        else:
+            real_link = link
+    else:
+        real_link = link
+    return real_link
 
 def subject_name(id_sub):
     url = 'https://olimpiada.ru/include/activity/megatitle.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year'
@@ -89,6 +107,7 @@ def parse_sub(id_sub):
         href_block = str(href_block)
         href = 'https://olimpiada.ru' + href_block[href_block.index('href="')+6:href_block.index('" style')]
         x.link = href
+        x.real_link = get_real_link(href)
         #print(href)
         x.id = (href[href.find('ity/')+4:]) + '_' + str(id_sub)
         #print(x.id)
@@ -139,6 +158,7 @@ def parse_sub(id_sub):
         #print(olimpiads[kol_vo].date)
         #print(olimpiads[kol_vo].link)
         #print(olimpiads[kol_vo].subject)
+        #print(olimpiads[kol_vo].real_link, type(olimpiads[kol_vo].real_link))
         kol_vo += 1
         url = 'http://olimpiada.ru/include/activity/megalist.php?type=any&subject%5B' + str(id_sub) + '%5D=on&class=any&period_date=&period=year&cnow=' + str(kol_vo)
         s = requests.get(url)
